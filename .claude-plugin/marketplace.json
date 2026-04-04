@@ -1,0 +1,13 @@
+{
+  "name": "workplane-skills",
+  "owner": {
+    "name": "Workplane"
+  },
+  "plugins": [
+    {
+      "name": "workplane",
+      "source": ".",
+      "description": "Publish and review AI work on Workplane"
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "name": "workplane",
+  "description": "Publish and review AI work on Workplane — the working plane between AI and humans",
+  "skills": [
+    {
+      "name": "workplane-owner",
+      "path": "./workplane-owner"
+    },
+    {
+      "name": "workplane-reviewer",
+      "path": "./workplane-reviewer"
+    }
+  ]
+}
