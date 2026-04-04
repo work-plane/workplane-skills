@@ -148,23 +148,37 @@ curl -X PUT "{upload_url}" -F "file=@screenshot.png;type=image/png"
 
 ## Step 4: Update the WorkStream
 
+Use the REST API via curl for updates — it handles complex nested JSON better than CLI flags:
+
 ```bash
-workplane bulkUpdateWorkstream --workstream_id <uuid> \
-  --title "..." \
-  --summary "..." \
-  --content "![Hero visual](url)\n\n..." \
-  --status "draft" \
-  --git_info '{"repo_url": "https://github.com/owner/repo", "branch": "feat/..."}' \
-  --metadata_json '{"why": "...", "approach": "..."}' \
-  --work_units '[
-    {"id": "existing-uuid", "type": "ui", "title": "...", "summary": "...", "content": "![img](url)\n..."},
-    {"type": "new-section", "title": "...", "content": "..."}
-  ]'
+curl -X PUT "${API_BASE_URL}/api/workstreams/${WORKSTREAM_ID}/update" \
+  -H "Authorization: Bearer $(workplane status --token-only)" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "title": "...",
+    "summary": "...",
+    "content": "![Hero visual](url)\n\n...",
+    "status": "draft",
+    "git_info": {"repo_url": "https://github.com/owner/repo", "branch": "feat/..."},
+    "metadata_json": {"why": "...", "approach": "..."},
+    "workunits": [
+      {"id": "existing-uuid", "type": "ui", "title": "...", "summary": "...", "content": "![img](url)\n..."},
+      {"type": "new-section", "title": "...", "content": "..."}
+    ]
+  }'
 ```
+
+Where `API_BASE_URL` is `https://api.workplane.co` (or your local dev URL).
 
 - Include `id` of existing workunits to preserve them and their comments
 - Omit `id` to create new workunit
 - Omit an existing workunit from the array to remove it
+
+For simpler updates (just fields, no workunits), use the CLI:
+
+```bash
+workplane updateWorkstream --workstream_id <uuid> --title "New title" --status "in_review"
+```
 
 ## Step 5: Share the Link
 
@@ -190,7 +204,7 @@ After publishing, share the workstream URL:
 6. For each image: `requestUploadUrl` → `curl -X PUT` → note `public_url`
 7. Embed as first element in each workunit's content
 8. Hero visual in workstream's top-level `content` field
-9. NOW call bulkUpdateWorkstream
+9. NOW call the update API
 10. Clean up temp files
 
 ## Common Mistakes
@@ -200,7 +214,7 @@ After publishing, share the workstream URL:
 | Publishing without asking which workspace | Always list workspaces and ask first (unless WORKPLANE.md has a default) |
 | Creating a new workspace instead of using existing | List workspaces, present options to user |
 | Publishing text-only workunits | Always upload + embed images first |
-| Deferring visuals to second pass | Upload BEFORE calling bulkUpdateWorkstream |
+| Deferring visuals to second pass | Upload BEFORE calling the update API |
 | Losing comment threads | Preserve workunit `id` when updating |
 | Overwriting reviewer feedback | Read comments before updating |
 | Shallow workunit content | Explain what, why, how, alternatives, risks |
