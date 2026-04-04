@@ -69,27 +69,41 @@ This returns the workstream + all workunits + all comments. Read everything — 
 
 **metadata_json** — structured context on both WorkStream and WorkUnit for reviewer agents. This is a first-class requirement, not an afterthought. See "Writing metadata_json" below.
 
-### Two audiences, two layers
+### Progressive disclosure — the core design
 
-| Layer | Audience | Field | Depth |
-|-------|----------|-------|-------|
-| Scannable | Humans | `summary` + hero visual | 2-3 sentences, what changed and why it matters |
-| Full reasoning | Agents | `content` + `metadata_json` | Complete explanation — everything needed to understand, reproduce, or challenge the work |
+Workplane is built for **progressive disclosure**. A reviewer should be able to glance at a workstream in 30 seconds and know what happened, OR spend 30 minutes diving into every decision. Your job is to make both paths work:
 
-Humans stop at the summary. Agents read everything. **Write content for the agent audience.**
+| Layer | Field | Who reads it | What it needs |
+|-------|-------|-------------|---------------|
+| **Glance** | WorkStream `summary` | Everyone | 2-3 plain-text sentences. What changed, why it matters, what the outcome is. A busy person reads ONLY this. |
+| **Scan** | WorkUnit `title` + `summary` | Most reviewers | Sections start collapsed. The title + summary is all they see. Write it so someone can scan 10 workunits in under a minute and know which ones to expand. |
+| **Read** | WorkUnit `content` | Interested reviewers | The full story — what changed, why, how, what else was considered. Rich markdown with visuals, code snippets, tables. This is where the depth lives. |
+| **Inspect** | `metadata_json` | Reviewer agents | Machine-readable reasoning: why, approach, alternatives, risks, assumptions. Agents consume this to validate the work programmatically. |
+
+**Every layer must stand on its own.** The summary must be useful without reading content. The content must be useful without reading metadata_json. Each layer adds depth, not corrections to the layer above.
+
+### Writing summaries (CRITICAL — this is what people actually read)
+
+The `summary` field is **plain text, 2-3 sentences**. It's the single most important thing you write because most reviewers stop here. A good summary answers: what did you do, why, and what's the outcome?
+
+**Bad:** "Updated authentication" — says nothing actionable.
+
+**Good:** "Reordered JWT validation to check token expiry before issuer, fixing stale sessions on custom domain deployments. Added 30s clock skew tolerance. All existing tests pass, one new test added."
+
+WorkUnit summaries follow the same rule. They show when the section is collapsed — the reviewer decides whether to expand based on this alone.
 
 ### Writing WorkUnit content (MANDATORY depth)
 
-Every workunit `content` field must cover **all** of the following that apply:
+Content is where you go deep. This is GFM+HTML markdown — use its full power. Every workunit `content` field must cover **all** of the following that apply:
 
-1. **What changed** — specific files, functions, components, endpoints affected
-2. **Why this approach** — the reasoning chain, constraints, what you learned from the codebase
-3. **What was considered and rejected** — alternatives and why they lost
-4. **How it works** — enough detail for another agent to understand without reading code
-5. **What could go wrong** — edge cases, failure modes, assumptions
-6. **Dependencies and interactions** — what other parts of the system this touches
+1. **What changed** — specific files, functions, components, endpoints. Not "updated the backend" but "added `validate_token_expiry()` in `auth.py` that checks JWT `exp` claim against server time with 30s clock skew tolerance"
+2. **Why this approach** — the reasoning chain, constraints, what you learned from the codebase that informed the choice
+3. **What was considered and rejected** — alternatives and why they lost. "Considered middleware-level validation but rejected because the auth flow requires per-route token scoping"
+4. **How it works** — enough detail for another agent to understand without reading code. Include code snippets for non-obvious logic
+5. **What could go wrong** — edge cases, failure modes, assumptions that might not hold
+6. **Dependencies and interactions** — what other parts of the system this touches, what breaks if this changes
 
-A workunit with just "Added token validation to the auth flow" is **unacceptable**.
+**A workunit with shallow content defeats the purpose of Workplane.** The whole point is that someone can drill into any section and get the full picture. "Added token validation to the auth flow" is unacceptable — that tells a reviewer nothing they couldn't get from a git diff subject line.
 
 ### Self-contained content (MANDATORY)
 
@@ -213,12 +227,13 @@ After publishing, share the workstream URL:
 
 ## Structuring Work
 
-- **WorkStream summary + hero visual are what humans scan first.** Keep the summary concise — workunits beneath must have full depth.
+- **Summary is king.** Most people read only the workstream summary. Make it count — what changed, why, outcome.
+- **WorkUnit summaries are what people scan.** Sections start collapsed. Title + summary is all they see. Write summaries that let someone scan 10 sections in a minute.
+- **Content is where you go deep.** The person who expands a section wants the full story. Give it to them — code snippets, tables, before/after, reasoning chains.
 - **Order workunits by importance, not chronology.** Position 1 = what the reviewer needs most.
 - **Break into focused workunits.** Common types: `ui`, `architecture`, `data_model`, `decision`, `testing`, `needs_input`.
 - **Content is GFM+HTML.** Use tables, code blocks, embedded images — whatever makes the work clearest.
 - **Update early, update often.** Don't wait until done.
-- **Depth over brevity.** A workunit that takes 2 minutes to read beats one that takes 10 seconds but leaves the reviewer guessing.
 
 ## Visual-First Checklist
 
@@ -244,7 +259,9 @@ After publishing, share the workstream URL:
 | Using screenshots when Canvas would work | Canvas gives live interactive previews — use it for UI, diagrams, mockups |
 | Losing comment threads | Preserve workunit `id` when updating |
 | Overwriting reviewer feedback | Read comments before updating |
-| Shallow workunit content | Explain what, why, how, alternatives, risks |
+| Generic summaries ("Updated auth") | Summaries are what people read — be specific about what, why, and outcome |
+| Shallow workunit content | Content is where depth lives — explain what, why, how, alternatives, risks |
 | Minimal metadata_json | Must contain high-density reasoning context |
+| Same level of detail in summary and content | Summary = glance (2-3 sentences), content = deep dive (full reasoning) |
 | Referencing local file paths as content | Embed the substance — readers have no filesystem access |
 | Not including git_info on code work | Always set git_info with repo_url, branch, pr_url |
