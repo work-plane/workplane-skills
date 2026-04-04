@@ -61,7 +61,7 @@ This returns the workstream + all workunits + all comments. Read everything — 
 
 ## Core Concepts
 
-**WorkStream** — a reviewable body of work (like a PR for humans). Has title, summary (plain text), content (GFM+HTML markdown), status, metadata_json, and git_info.
+**WorkStream** — a reviewable body of work (like a PR for humans). Has title, summary (plain text), content (GFM+HTML markdown), metadata_json, and git_info.
 
 **WorkUnit** — a section within a WorkStream covering one aspect (UI changes, architecture, decisions). Ordered by `position` — put most important first.
 
@@ -227,7 +227,6 @@ curl -X PUT "${API_BASE_URL}/api/workstreams/${WORKSTREAM_ID}/update" \
     "title": "...",
     "summary": "...",
     "content": "![Hero visual](url)\n\n...",
-    "status": "draft",
     "git_info": {"repo_url": "https://github.com/owner/repo", "branch": "feat/..."},
     "metadata_json": {"why": "...", "approach": "..."},
     "workunits": [
@@ -246,7 +245,7 @@ Where `API_BASE_URL` is `https://api.workplane.co` (or your local dev URL).
 For simpler updates (just fields, no workunits), use the CLI:
 
 ```bash
-workplane updateWorkstream --workstream_id <uuid> --title "New title" --status "in_review"
+workplane updateWorkstream --workstream_id <uuid> --title "New title"
 ```
 
 ## Step 5: Share the Link

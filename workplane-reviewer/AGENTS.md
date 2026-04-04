@@ -36,8 +36,7 @@ workplane listWorkstreams --workspace_id <uuid>
 ```
 
 1. Ask the user which workspace, or use the one from `WORKPLANE.md`
-2. Look for workstreams with `status: "in_review"` — these are explicitly waiting for review
-3. Present the list and ask: **Which workstream should I review?**
+2. Present the list and ask: **Which workstream should I review?**
 
 If the user already gave you a workstream ID or URL, skip discovery.
 
