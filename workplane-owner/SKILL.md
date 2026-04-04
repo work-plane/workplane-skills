@@ -65,6 +65,8 @@ This returns the workstream + all workunits + all comments. Read everything — 
 
 **WorkUnit** — a section within a WorkStream covering one aspect (UI changes, architecture, decisions). Ordered by `position` — put most important first.
 
+**WorkUnit summary is MANDATORY — 2-3 lines.** Sections start collapsed. The reviewer sees only the title + summary. Based on that alone they decide whether to expand and read the full content. Write it so a busy person can scan 10 sections in under a minute and know which ones matter to them.
+
 **git_info** — optional typed git context on WorkStream. When your work relates to code, **always include this**. The frontend renders it as a clickable repo name, branch pill, and PR link. Structure: `{ "repo_url": "https://github.com/owner/repo", "branch": "feat/...", "pr_url": "https://github.com/owner/repo/pull/N" }`. Only `repo_url` is required; `branch` and `pr_url` are optional.
 
 **metadata_json** — structured context on both WorkStream and WorkUnit for reviewer agents. This is a first-class requirement, not an afterthought. See "Writing metadata_json" below.
@@ -107,7 +109,7 @@ Content is where you go deep. This is GFM+HTML markdown — use its full power. 
 
 ### Self-contained content (MANDATORY)
 
-Workunit content must be **self-contained**. Readers access workunits via workplane.co with no access to your local filesystem. Never reference local file paths as content.
+Workunit content must be **self-contained**. Readers access workunits via workplane.co with no access to your local filesystem. Never reference local file paths as content. Keep `content` human-scannable — put long-form detail (full specs, raw data) in `metadata_json` fields like `full_spec`.
 
 ### Writing metadata_json (MANDATORY)
 
@@ -131,6 +133,33 @@ Workunit content must be **self-contained**. Readers access workunits via workpl
   "assumptions": ["Things assumed true that might not be"],
   "open_questions": ["Unresolved decisions"],
   "testing": "What was tested, what wasn't, and why"
+}
+```
+
+**Bad metadata_json:** `{"why": "needed auth"}` — useless, says nothing an agent can act on.
+
+**Good metadata_json:**
+```json
+{
+  "why": "MCP JWT validation was accepting tokens with expired claims because the issuer check short-circuited before expiry validation. This caused stale sessions to persist for Supabase custom domain deployments where the issuer URL changed.",
+  "approach": "Reordered validation in JWTVerifier.verify() to check exp claim first via PyJWT's built-in expiry check, then validate issuer against the configured SUPABASE_URL. Added 30s leeway for clock skew.",
+  "alternatives": [
+    {
+      "option": "Validate issuer and expiry in parallel with separate error messages",
+      "rejected_because": "Unnecessary complexity — sequential check with early return is clearer and PyJWT already handles expiry natively"
+    }
+  ],
+  "risks": [
+    "30s leeway means a token can be used up to 30s past expiry — acceptable for this use case but would not be for financial transactions"
+  ],
+  "assumptions": [
+    "Server clocks are NTP-synced with <30s drift",
+    "Supabase JWTs always include an exp claim (not documented as guaranteed)"
+  ],
+  "agent": {
+    "model": "claude-opus-4-6",
+    "client": "claude-code"
+  }
 }
 ```
 

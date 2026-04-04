@@ -67,11 +67,14 @@ If the workstream has `git_info`, use it to understand what code this relates to
 Visuals are the most important information — for both humans and agents. Workunits may have **Canvas previews** (live rendered TSX components in an iframe) or **embedded images**. Before diving into text:
 
 - **Does every workunit have a visual?** Missing visuals (no canvas, no images) is a blocker. Flag immediately.
+- **Read the images yourself.** Look at before/after screenshots — do they show what the text claims changed? Do the visuals match the written description? Flag any mismatch between what you see and what the owner says happened.
+- **Do the visuals tell the story on their own?** A before/after pair should make the change obvious without reading text. If you can't understand what changed from the images alone, the visuals are insufficient.
 - **For Canvas workunits:** Check the rendered preview — does it show what the text claims? Review the source code tabs — is it using real project components or toy examples? Does the canvas compile against the actual codebase?
 - **For image workunits:** Do the visuals match the written description? Does the before/after tell the story on its own?
 - **Does the hero visual represent the most important change?**
+- **Are visuals diagrams/mockups when there's no live UI?** The owner should have created HTML visualizations or Canvas components for non-UI work. Text-only workunits for complex changes fail the visual-first requirement.
 
-If visuals are missing or unclear, flag that *before* anything else.
+If visuals are missing or unclear, flag that *before* anything else. A workstream without visuals is incomplete regardless of how good the text is.
 
 ### 4. Evaluate content quality
 
@@ -99,24 +102,35 @@ This is your core job. Don't just check that fields exist — validate the logic
 - Do assumptions hold?
 - Are open questions actually open?
 
-### 7. Draft comments (always drafts)
+### 7. Leave comments via threads
 
-Comments are anchored to a specific workunit. Always use `is_draft: true` — the human decides what to post.
+Comments are organized into **threads**. Each thread belongs to a workunit or a workstream.
 
 ```bash
-# Create a draft comment
-workplane createThread --workunit_id <uuid> \
-  --body "Your review comment" \
-  --is_draft true
+# Comment on a workunit
+workplane createThread --work_unit_id <uuid> \
+  --body "Your review comment"
+
+# Comment on the workstream (document-level)
+workplane createThread --workstream_id <uuid> \
+  --body "Overall feedback on the document"
 
 # Reply to an existing thread
-workplane createComment --thread_id <uuid> \
-  --body "Your reply" \
-  --is_draft true
+workplane addCommentToThread --thread_id <uuid> \
+  --body "Your reply"
 
 # Resolve a thread
 workplane resolveThread --thread_id <uuid> --resolved true
+
+# Unresolve a thread (if the issue wasn't actually addressed)
+workplane resolveThread --thread_id <uuid> --resolved false
 ```
+
+- Set `--work_unit_id` + use anchor text for feedback on specific content — the text gets highlighted in the margin.
+- Set `--work_unit_id` without anchor text for general feedback on a workunit section.
+- Set `--workstream_id` for document-level feedback on the workstream itself (title, summary, overall approach).
+- Provide exactly one of `--work_unit_id` or `--workstream_id`, never both.
+- Prefer text-anchored comments for specific feedback — they're more actionable than general section comments.
 
 ## Review Principles
 
@@ -134,7 +148,7 @@ workplane resolveThread --thread_id <uuid> --resolved true
 
 | Mistake | Fix |
 |---------|-----|
-| Posting comments directly (`is_draft: false`) | Always `is_draft: true` — human publishes |
+| Posting outside thread APIs | Always use thread commands (`createThread`, `addCommentToThread`, `resolveThread`) |
 | Reviewing only visible content | Check `metadata_json` for hidden reasoning |
 | Writing vague feedback | Be specific with file/line/behavior |
 | Nitpicking style over substance | Focus on 2-3 things that actually matter |
