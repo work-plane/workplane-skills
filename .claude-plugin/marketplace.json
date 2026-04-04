@@ -1,4 +1,5 @@
 {
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
   "name": "workplane-skills",
   "owner": {
     "name": "Workplane"
@@ -6,8 +7,10 @@
   "plugins": [
     {
       "name": "workplane",
-      "source": ".",
-      "description": "Publish and review AI work on Workplane"
+      "description": "Publish and review AI work on Workplane — the working plane between AI and humans",
+      "source": "./",
+      "category": "productivity",
+      "homepage": "https://workplane.co"
     }
   ]
 }
