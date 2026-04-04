@@ -64,11 +64,11 @@ If the workstream has `git_info`, use it to understand what code this relates to
 
 ### 3. Evaluate visuals
 
-Visuals are the most important information — for both humans and agents. Before diving into text:
+Visuals are the most important information — for both humans and agents. Workunits may have **Canvas previews** (live rendered TSX components in an iframe) or **embedded images**. Before diving into text:
 
-- **Does every workunit have an embedded image?** Missing visuals is a blocker. Flag immediately.
-- **Do the visuals match the written description?** Flag any mismatch.
-- **Do the visuals tell the story on their own?** A before/after pair should make the change obvious without reading text.
+- **Does every workunit have a visual?** Missing visuals (no canvas, no images) is a blocker. Flag immediately.
+- **For Canvas workunits:** Check the rendered preview — does it show what the text claims? Review the source code tabs — is it using real project components or toy examples? Does the canvas compile against the actual codebase?
+- **For image workunits:** Do the visuals match the written description? Does the before/after tell the story on its own?
 - **Does the hero visual represent the most important change?**
 
 If visuals are missing or unclear, flag that *before* anything else.

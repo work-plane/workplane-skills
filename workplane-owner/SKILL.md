@@ -120,19 +120,45 @@ Workunit content must be **self-contained**. Readers access workunits via workpl
 }
 ```
 
-## Step 3: Upload Visuals (MANDATORY — before any update)
+## Step 3: Add Visuals (MANDATORY — before any update)
 
-Every workunit MUST have an embedded image. No exceptions.
+Every workunit MUST have visuals. **Use Canvas for live previews** — it's better than screenshots because reviewers see interactive, rendered components directly in the browser.
 
-### How to create visuals
+### Option A: Canvas (preferred)
 
-1. If you changed UI: screenshot before and after states
-2. If no live UI: create an HTML page that visualizes the work (diagrams, mockups)
-3. Serve locally: `python3 -m http.server 9876`
-4. Screenshot with browser automation: navigate to `http://localhost:9876/file.html`, take full-page screenshot
-5. Clean up the server when done
+Write TSX components, compile them against your project's real dependencies, and publish as a live preview. Reviewers see the rendered output in an iframe — no screenshots needed.
 
-### How to upload
+1. **Create a directory** with your TSX source files:
+
+```
+my-canvas/
+├── App.tsx        # entry component
+└── helpers.ts     # optional supporting files
+```
+
+2. **Publish with the CLI:**
+
+```bash
+workplane publishCanvas \
+  --directory ./my-canvas \
+  --title "Auth flow redesign" \
+  --workspace-id <uuid> \
+  --workstream-id <uuid>    # optional — creates one if omitted
+```
+
+The CLI auto-detects your project root (via `vite.config.ts`), compiles with Vite against your real `node_modules` and Tailwind config, and uploads the result. The reviewer sees a live rendered preview with source code viewer and version history.
+
+**What to canvas:**
+- UI changes — before/after states as components
+- Architecture diagrams — render with a charting library
+- Data flows — interactive visualizations
+- Mockups — build them in TSX with your real design system
+
+**Canvas compiles against your project.** You can import your actual components, use your Tailwind classes, and render with real data. This is not a toy sandbox — it's your real codebase.
+
+### Option B: Image upload (fallback)
+
+For cases where Canvas doesn't fit (e.g., terminal screenshots, external tool output):
 
 ```bash
 # 1. Get a signed upload URL
@@ -196,16 +222,16 @@ After publishing, share the workstream URL:
 
 ## Visual-First Checklist
 
-1. Screenshot BEFORE changes
-2. Make changes
-3. Screenshot AFTER changes (same angle/viewport)
-4. Create HTML visualization if no live UI to screenshot
-5. Serve HTML locally, screenshot with browser automation
-6. For each image: `requestUploadUrl` → `curl -X PUT` → note `public_url`
-7. Embed as first element in each workunit's content
-8. Hero visual in workstream's top-level `content` field
-9. NOW call the update API
-10. Clean up temp files
+**With Canvas (preferred):**
+1. Create a directory with TSX source files showing the before/after or key visual
+2. `workplane publishCanvas --directory ./my-canvas --title "..." --workspace-id <uuid> --workstream-id <uuid>`
+3. The canvas renders live in the workunit — no further embedding needed
+4. Update workstream content and metadata via the update API
+
+**With images (fallback):**
+1. Screenshot before and after states
+2. `requestUploadUrl` → `curl -X PUT` → embed `public_url` in content
+3. Update workstream via the update API
 
 ## Common Mistakes
 
@@ -213,8 +239,9 @@ After publishing, share the workstream URL:
 |---------|-----|
 | Publishing without asking which workspace | Always list workspaces and ask first (unless WORKPLANE.md has a default) |
 | Creating a new workspace instead of using existing | List workspaces, present options to user |
-| Publishing text-only workunits | Always upload + embed images first |
-| Deferring visuals to second pass | Upload BEFORE calling the update API |
+| Publishing text-only workunits | Use Canvas (preferred) or upload images — every workunit needs visuals |
+| Deferring visuals to second pass | Publish canvas or upload images BEFORE calling the update API |
+| Using screenshots when Canvas would work | Canvas gives live interactive previews — use it for UI, diagrams, mockups |
 | Losing comment threads | Preserve workunit `id` when updating |
 | Overwriting reviewer feedback | Read comments before updating |
 | Shallow workunit content | Explain what, why, how, alternatives, risks |
