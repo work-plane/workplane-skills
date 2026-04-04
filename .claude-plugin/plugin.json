@@ -1,14 +1,10 @@
 {
   "name": "workplane",
+  "version": "1.0.0",
   "description": "Publish and review AI work on Workplane — the working plane between AI and humans",
-  "skills": [
-    {
-      "name": "workplane-owner",
-      "path": "./workplane-owner"
-    },
-    {
-      "name": "workplane-reviewer",
-      "path": "./workplane-reviewer"
-    }
-  ]
+  "author": {
+    "name": "Workplane"
+  },
+  "skills": "./",
+  "homepage": "https://workplane.co"
 }
