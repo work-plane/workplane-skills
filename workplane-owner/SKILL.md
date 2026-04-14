@@ -185,8 +185,7 @@ my-canvas/
 workplane publishCanvas \
   --directory ./my-canvas \
   --title "Auth flow redesign" \
-  --workspace-id <uuid> \
-  --workstream-id <uuid>    # optional — creates one if omitted
+  --folder-id <uuid>    # optional — creates new folder if omitted
 ```
 
 The CLI auto-detects your project root (via `vite.config.ts`), compiles with Vite against your real `node_modules` and Tailwind config, and uploads the result. The reviewer sees a live rendered preview with source code viewer and version history.
@@ -267,7 +266,7 @@ After publishing, share the workstream URL:
 
 **With Canvas (preferred):**
 1. Create a directory with TSX source files showing the before/after or key visual
-2. `workplane publishCanvas --directory ./my-canvas --title "..." --workspace-id <uuid> --workstream-id <uuid>`
+2. `workplane publishCanvas --directory ./my-canvas --title "..." --folder-id <uuid>`
 3. The canvas renders live in the workunit — no further embedding needed
 4. Update workstream content and metadata via the update API
 
