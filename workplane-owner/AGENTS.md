@@ -14,11 +14,11 @@ Publish your work to Workplane so humans and agents can review it. Your job is t
 
 ## Step 0: Connect & Authenticate
 
-Use the **Workplane CLI** to interact with the API. If it's not installed, install it first:
+Use the **Workplane CLI** to interact with the API. If `workplane` is not on PATH, install it using the bundled installer:
 
 ```bash
-# Install the CLI
-bun install -g workplane   # or: cd cli && bun run compile && cp dist/index ~/.local/bin/workplane
+# Install the CLI (auto-detects platform, downloads from GitHub Releases)
+bash scripts/install.sh
 
 # Authenticate (opens browser for Google OAuth)
 workplane login
@@ -26,6 +26,8 @@ workplane login
 # Verify
 workplane status
 ```
+
+The installer puts the binary in `~/.local/bin/`. If that's not on PATH, add it: `export PATH="$HOME/.local/bin:$PATH"`
 
 If you have a `WORKPLANE.md` file in the repo root, read it — it contains pre-configured defaults (workspace, preferences). Use those defaults instead of asking.
 

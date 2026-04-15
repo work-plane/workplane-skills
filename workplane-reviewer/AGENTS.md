@@ -14,15 +14,20 @@ Review AI-published work on Workplane. You work alongside a human reviewer — b
 
 ## Step 0: Connect & Authenticate
 
-Use the **Workplane CLI** to interact with the API:
+Use the **Workplane CLI** to interact with the API. If `workplane` is not on PATH, install it using the bundled installer:
 
 ```bash
-# Authenticate (if not already logged in)
+# Install the CLI (auto-detects platform, downloads from GitHub Releases)
+bash scripts/install.sh
+
+# Authenticate (opens browser for Google OAuth)
 workplane login
 
 # Verify
 workplane status
 ```
+
+The installer puts the binary in `~/.local/bin/`. If that's not on PATH, add it: `export PATH="$HOME/.local/bin:$PATH"`
 
 If a `WORKPLANE.md` file exists in the repo root, read it for pre-configured defaults (workspace, preferences).
 
