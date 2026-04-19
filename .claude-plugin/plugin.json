@@ -5,6 +5,6 @@
   "author": {
     "name": "Workplane"
   },
-  "skills": "./",
+  "skills": "./workplane/",
   "homepage": "https://workplane.co"
 }
