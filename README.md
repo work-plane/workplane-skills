@@ -1,13 +1,14 @@
 # Workplane Skills
 
-Agent skills for publishing and reviewing work on [Workplane](https://workplane.co) — the working plane between AI and humans.
+Agent skill for publishing and reviewing work on [Workplane](https://workplane.co) — the working plane between AI and humans.
 
 ## Skills
 
 | Skill | Description |
 |-------|-------------|
-| **workplane-owner** | Publish work to Workplane — create workstreams, upload visuals, write metadata |
-| **workplane-reviewer** | Review published work — analyze reasoning, evaluate visuals, draft comments |
+| **workplane** | Publish or review work using the Workplane CLI — create projects, upload items, tag snapshots, manage sharing |
+
+Previously split into `workplane-owner` + `workplane-reviewer`; consolidated into a single `workplane` skill backed by the v2 CLI (projects/items/tags rather than workstreams/workunits).
 
 ## Installation
 
@@ -21,33 +22,24 @@ claude skill install work-plane/workplane-skills
 
 Copy the skill directory into your project's `.agents/skills/` directory, or reference via your agent platform's skill installation mechanism.
 
-## Setup
-
-After installing, run the onboarding prompt to create a `WORKPLANE.md` in your repo root. This file stores your workspace preferences so the skills know where to publish without asking each time.
-
 ## Structure
 
 ```
-skills/
-├── workplane-owner/
-│   ├── SKILL.md       # Skill definition (canonical)
-│   ├── CLAUDE.md      # Claude Code compatibility
-│   └── AGENTS.md      # Codex / generic agent compatibility
-├── workplane-reviewer/
-│   ├── SKILL.md
-│   ├── CLAUDE.md
-│   └── AGENTS.md
-├── WORKPLANE.template.md   # Template for per-repo config
-└── README.md               # This file
+workplane/
+  SKILL.md           # Skill definition (canonical)
+  scripts/
+    install.sh       # Downloads the workplane CLI from GitHub Releases
+README.md            # This file
 ```
+
+`AGENTS.md` (for Codex compatibility) is generated from `SKILL.md` during CI sync.
 
 ## How It Works
 
-1. **Install the skills** — your agent platform picks them up automatically
-2. **Onboard** — create `WORKPLANE.md` in your repo with your workspace defaults
-3. **Use** — when you finish work, tell your agent to publish to Workplane. The owner skill handles screenshots, uploads, and structured reporting.
-4. **Review** — ask your agent to review a workstream. The reviewer skill reads content, metadata, and visuals, then drafts comments for your approval.
+1. **Install the skill** — your agent platform picks it up automatically
+2. **Publish** — when you finish work, tell your agent to publish to Workplane. The skill uses the CLI to create a project, upload files, snapshot with a tag, and share.
+3. **Review** — point your agent at a workplane.co URL or project address. The skill uses the CLI to list, read, and pull the project contents for review.
 
 ## License
 
-MIT
+MIT License. See [workplane.co](https://workplane.co) for more information.
