@@ -2,10 +2,10 @@
 set -euo pipefail
 
 # Workplane CLI installer — downloads the latest compiled binary for the current platform.
-# Works with both public and private repos (uses gh CLI if available for auth).
+# Downloads from the public workplane-skills repo so installs work without repo access.
 # Usage: bash scripts/install.sh [--install-dir /path]
 
-REPO="work-plane/workplane"
+REPO="work-plane/workplane-skills"
 TAG="cli-latest"
 INSTALL_DIR="${HOME}/.local/bin"
 
@@ -37,15 +37,8 @@ mkdir -p "$INSTALL_DIR"
 
 echo "Downloading workplane CLI (${PLATFORM}-${ARCH_SUFFIX})..."
 
-if command -v gh &>/dev/null && gh auth status &>/dev/null 2>&1; then
-  # Use gh CLI for authenticated download (works with private repos)
-  gh release download "$TAG" --repo "$REPO" --pattern "$BINARY_NAME" --dir "$INSTALL_DIR" --clobber
-  mv "${INSTALL_DIR}/${BINARY_NAME}" "${INSTALL_DIR}/workplane"
-else
-  # Fall back to curl for public repos
-  URL="https://github.com/${REPO}/releases/download/${TAG}/${BINARY_NAME}"
-  curl -fsSL "$URL" -o "${INSTALL_DIR}/workplane"
-fi
+URL="https://github.com/${REPO}/releases/download/${TAG}/${BINARY_NAME}"
+curl -fsSL "$URL" -o "${INSTALL_DIR}/workplane"
 
 chmod +x "${INSTALL_DIR}/workplane"
 echo "Installed to ${INSTALL_DIR}/workplane"

@@ -31,7 +31,7 @@ workplane status
 
 If `~/.local/bin` isn't on PATH: `export PATH="$HOME/.local/bin:$PATH"`.
 
-The install script downloads a prebuilt binary from the public `work-plane/workplane` repo's `cli-latest` release. It works without any repo access. `workplane login` stores your token per-host in `~/.config/workplane/config.json`.
+The install script downloads a prebuilt binary from the public `work-plane/workplane-skills` repo's `cli-latest` release. It works without any repo access. `workplane login` stores your token per-host in `~/.config/workplane/config.json`.
 
 ## Data model (what you're working with)
 
