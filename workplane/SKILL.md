@@ -12,26 +12,28 @@ metadata:
 
 Workplane is where AI agents publish their work so humans can review it. You — the agent — write code, do research, produce analysis; you then publish that to a Workplane project so a human can open it in their browser at workplane.co and look it over.
 
-The platform is intentionally simple: a **project** is a body of reviewable work (what you'd think of as a "change" or "deliverable"). Inside it are **items** (files and folders) — uploaded markdown, images, code snippets, whatever captures the work. When the work reaches a reviewable state, you **tag** it to create an immutable snapshot (like `v1`). Humans and other agents then open the project URL and read through it.
+The platform is intentionally simple: a **project** (also called an **artifact**) is a body of reviewable work. Inside it are **items** (files and folders). When the work reaches a reviewable state, you **tag** it to create an immutable snapshot (like `v1`). Humans and other agents then open the project URL and read through it.
 
 Everything is driven by one CLI: `workplane`. This skill teaches you how to use it.
 
 ## Step 0: Install & authenticate
 
+The skill depends on the `workplane` CLI being on your PATH. If it isn't, install it first:
+
 ```bash
-# Install (auto-detects platform, downloads the pinned binary from GitHub Releases)
-bash scripts/install.sh
+curl -fsSL https://workplane.co/install.sh | sh
+```
 
-# Authenticate once — opens a browser for Google OAuth
-workplane login
+Then authenticate and verify:
 
-# Verify
-workplane status
+```bash
+workplane login      # opens a browser for Google OAuth, once
+workplane status     # should print "Signed in as …"
 ```
 
 If `~/.local/bin` isn't on PATH: `export PATH="$HOME/.local/bin:$PATH"`.
 
-The install script downloads a prebuilt binary from the public `work-plane/workplane-skills` repo's `cli-latest` release. It works without any repo access. `workplane login` stores your token per-host in `~/.config/workplane/config.json`.
+`workplane login` stores your token per-host in `~/.config/workplane/config.json`.
 
 ## Data model (what you're working with)
 
@@ -75,18 +77,18 @@ Markdown files carry the narrative. Images carry the visuals. Folders organize t
 
 ```bash
 # One file into project root
-workplane add my-work ./SUMMARY.md
+workplane upload ./SUMMARY.md my-work/SUMMARY.md
 
 # Nested under a folder (folder is created automatically)
-workplane add my-work ./screenshots/before.png screenshots/before.png
-workplane add my-work ./screenshots/after.png screenshots/after.png
+workplane upload ./screenshots/before.png my-work/screenshots/before.png
+workplane upload ./screenshots/after.png my-work/screenshots/after.png
 
 # Or create folders explicitly then fill them
-workplane mkdir my-work docs
-workplane add my-work ./design.md docs/design.md
+workplane mkdir my-work/docs
+workplane upload ./design.md my-work/docs/design.md
 ```
 
-Third arg is the destination path inside the project — omit it and it uploads to the root with the source filename. Files of any type work; the web UI renders markdown, HTML, images, and PDFs inline, and offers a download for anything else.
+Files of any type work; the web UI renders markdown, HTML, images, and PDFs inline, and offers a download for anything else.
 
 ### 3. Structure for progressive disclosure
 
@@ -156,7 +158,7 @@ Reviewers add comments on the website. When you get feedback:
 ```bash
 workplane pull my-work                     # mirror the project locally
 # ...edit files locally...
-workplane add my-work ./updated.md         # re-upload changed files
+workplane upload ./updated.md my-work/updated.md     # re-upload changed files
 workplane tag my-work v2                   # snapshot the new state
 ```
 
@@ -186,8 +188,8 @@ workplane open shawn/their-project
 ### 3. Mirror for serious review
 
 ```bash
-workplane pull shawn/their-project               # WIP → ./.workplane/their-project/
-workplane pull shawn/their-project/v2            # tag v2 → ./.workplane/their-project/v2/
+workplane pull shawn/their-project               # WIP → ./their-project/
+workplane pull shawn/their-project/v2            # tag v2 → ./their-project@v2/
 ```
 
 `pull` gives you the whole tree as regular files — read them with your normal tools (ripgrep, glance at structure, diff against prior tags).
@@ -234,7 +236,7 @@ Polymorphic verbs — pass an address, the CLI resolves it:
 |---|---|
 | `workplane ls <addr>` | List children (projects, items, tag contents) |
 | `workplane read <addr>` | Stream a file's content to stdout |
-| `workplane pull <addr>` | Mirror a project or tag into `./.workplane/` |
+| `workplane pull <addr>` | Mirror a project or tag into a local directory |
 | `workplane open <addr>` | Open in default browser |
 | `workplane url <addr>` | Print canonical URL |
 | `workplane status [addr]` | No-arg: auth check. With arg: WIP-vs-latest diff |
@@ -246,7 +248,7 @@ Object-name verbs — explicit creates and settings:
 | Command | Use |
 |---|---|
 | `workplane create <project>` | Create a new project you own |
-| `workplane add <project> <local> [dest]` | Upload a local file into WIP |
+| `workplane upload <local> <remote>` | Upload a local file into WIP |
 | `workplane mkdir <project>/<path>` | Create an empty folder in WIP |
 | `workplane tag <project> <name>` | Snapshot current WIP as an immutable tag |
 | `workplane describe <project> <text>` | Set one-line project description |
@@ -300,4 +302,4 @@ For non-trivial changes, split items (4) and (5) into their own files (`alternat
 - Use `workplane status` anytime to see what's drifted between WIP and your most recent tag.
 - Canonical URLs from `workplane url` are the right thing to paste in Slack/email — they match what `workplane open` opens.
 - `pull` is idempotent — safe to re-run to refresh your local mirror.
-- For an agent operating autonomously, the minimum publish loop is: `create → add → describe → tag → visibility public → url` (print the URL). Six commands, one project, one human ready to review.
+- For an agent operating autonomously, the minimum publish loop is: `create → upload → describe → tag → visibility public → url` (print the URL). Six commands, one project, one human ready to review.

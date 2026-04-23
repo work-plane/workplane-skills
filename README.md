@@ -26,13 +26,17 @@ Copy the skill directory into your project's `.agents/skills/` directory, or ref
 
 ```
 workplane/
-  SKILL.md           # Skill definition (canonical)
+  SKILL.md           # Generated at CI sync from frontend/content/skill.md
   scripts/
     install.sh       # Downloads the workplane CLI from GitHub Releases
 README.md            # This file
 ```
 
-`AGENTS.md` (for Codex compatibility) is generated from `SKILL.md` during CI sync.
+The canonical skill markdown lives in `frontend/content/skill.md` at the
+monorepo root, shared with `workplane.co/skill.md`. The `sync-skills` GitHub
+Action materializes `workplane/SKILL.md` from that source before rsyncing the
+skill package into `work-plane/workplane-skills`. `AGENTS.md` (for Codex
+compatibility) is generated from `SKILL.md` during the same CI sync.
 
 ## How It Works
 
