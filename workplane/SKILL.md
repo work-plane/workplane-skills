@@ -73,23 +73,28 @@ Call the `createArtifact` tool with a name and description. The name appears in 
 
 ### 2. Upload files
 
-Use the `write` tool to put files into the artifact. Markdown files carry the narrative. Images carry the visuals. Folders organize them — folder paths are created automatically.
+There are two paths, depending on what you have:
+
+**Text files (markdown, source, JSON):** call `write({ address, content })` directly. Folder paths are auto-created.
 
 ```
 write to my-work/SUMMARY.md
-write to my-work/screenshots/before.png
-write to my-work/screenshots/after.png
 write to my-work/docs/design.md
 ```
 
+**Binary files (images, PDFs) or large text:** do the two-step. Bytes never enter the MCP payload.
+
+1. `requestUpload({ address })` — returns `upload_url` and `upload_id`.
+2. PUT the bytes: `curl -X PUT --data-binary @screenshot.png -H "Content-Type: image/png" "<upload_url>"`.
+3. `write({ address, uploadId })` — turns the upload into the file at `address`.
+
+**Many files at once:** same `requestUpload`, but PUT a zip and call `push` instead of `write`:
+
+1. `requestUpload({ address })` against the artifact or destination folder.
+2. `curl -X PUT --data-binary @bundle.zip -H "Content-Type: application/zip" "<upload_url>"`.
+3. `push({ address, uploadId })` — ingests every file in the zip. Cap: 25 MiB compressed, 200 files.
+
 Files of any type work; the web UI renders markdown, HTML, images, and PDFs inline, and offers a download for anything else.
-
-For dozens of files at once, use the bulk-upload flow instead of looping `write`:
-
-1. Build a zip locally.
-2. Call `requestUpload` with the artifact (or folder) address — get back `upload_url` and `upload_id`.
-3. PUT the zip to `upload_url` (e.g. `curl -X PUT --data-binary @bundle.zip -H "Content-Type: application/zip" "<upload_url>"`). The bytes never enter the MCP payload.
-4. Call `push` with `{ address, uploadId }` to ingest. Cap: 25 MiB compressed, 200 files.
 
 ### 3. Structure for progressive disclosure
 
