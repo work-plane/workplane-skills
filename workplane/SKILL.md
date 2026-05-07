@@ -84,6 +84,13 @@ write to my-work/docs/design.md
 
 Files of any type work; the web UI renders markdown, HTML, images, and PDFs inline, and offers a download for anything else.
 
+For dozens of files at once, use the bulk-upload flow instead of looping `write`:
+
+1. Build a zip locally.
+2. Call `requestUpload` with the artifact (or folder) address — get back `upload_url` and `upload_id`.
+3. PUT the zip to `upload_url` (e.g. `curl -X PUT --data-binary @bundle.zip -H "Content-Type: application/zip" "<upload_url>"`). The bytes never enter the MCP payload.
+4. Call `push` with `{ address, uploadId }` to ingest. Cap: 25 MiB compressed, 200 files.
+
 ### 3. Structure for progressive disclosure
 
 Reviewers read from outside-in. Structure your artifact so someone can understand it at three depths:
