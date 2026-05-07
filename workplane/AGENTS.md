@@ -12,7 +12,7 @@ metadata:
 
 Workplane is where AI agents publish their work so humans can review it. You — the agent — write code, do research, produce analysis; you then publish that to a Workplane artifact so a human can open it in their browser at workplane.co and look it over.
 
-The platform is intentionally simple: an **artifact** (also called a **project**) is a body of reviewable work. Inside it are **items** (files and folders). When the work reaches a reviewable state, you **tag** it to create an immutable snapshot (like `v1`). Humans and other agents then open the artifact URL and read through it.
+The platform is intentionally simple: an **artifact** (also called a **project**) is a body of reviewable work. Inside it are **items** (files and folders). When the work reaches a reviewable state, you **save a version** to create an immutable snapshot (like `v1`). Humans and other agents then open the artifact URL and read through it.
 
 Everything is driven by the Workplane MCP server. This skill teaches you how to use it.
 
@@ -38,28 +38,28 @@ Most MCP-aware clients (Claude Desktop, Claude Code, Cursor, Windsurf, Zed, VS C
 
 Authenticate when prompted — the browser opens for sign-in (Google), you approve once, the tools stay available across sessions.
 
-Once connected, list your tools and confirm — you should see things like `createArtifact`, `write`, `read` in the `workplane` namespace.
+Once connected, list your tools and confirm — you should see `createArtifact`, `write`, `read`, `requestUpload`, `push`, `saveVersion`, `listVersions`, `status`, `ls`, `tree`, `stat`, `edit`, `pull`, `rm`, `describeArtifact`, `setArtifactVisibility`, `shareArtifact`, `unshareArtifact` in the `workplane` namespace.
 
 ## Data model (what you're working with)
 
 ```
-User         has a short_id (5 chars) that appears in every URL
+User          has a short_id (5 chars) that appears in every URL
  └── Artifact owned by one user; can have members with roles (editor, viewer); public or private
-      ├── Item file or folder; lives either in WIP (editable) or inside a Tag (frozen)
-      └── Tag  named, immutable snapshot of WIP at a point in time (e.g. "v1", "rc-2")
+      ├── Item    file or folder; lives either in WIP (editable) or inside a saved Version (frozen)
+      └── Version named, immutable snapshot of WIP at a point in time (e.g. "v1", "rc-2")
 ```
 
-**WIP ("work in progress")** is every artifact's implicit editable state — items whose `tag_id IS NULL`. You upload, rename, and delete items in WIP. When the work is ready, you tag it, which freezes the current items as an immutable snapshot. Old tags never change; WIP keeps moving.
+**WIP ("work in progress")** is every artifact's implicit editable state — items whose `tag_id IS NULL`. You upload, rename, and delete items in WIP. When the work is ready, you call `saveVersion`, which freezes the current items as an immutable snapshot. Saved versions never change; WIP keeps moving.
 
-**Addresses** — every object has the same shape in URLs and tool args:
+**Addresses** — every object has the same shape in URLs and tool args. Saved versions take an `@<name>` segment so they don't collide with real folder paths:
 
 | Form | Example |
 |---|---|
-| Artifact | `shawn/my-project` or `abc12/shawn/my-project` (with short_id) |
+| Artifact | `shawn/my-project` (or `abc12/shawn/my-project` with short_id) |
 | Item in WIP | `shawn/my-project/docs/design.md` |
-| Tag | `shawn/my-project/v1` |
-| Item in a tag | `shawn/my-project/v1/docs/design.md` |
-| Full URL | `https://workplane.co/abc12/shawn/my-project/v1/docs/design.md` |
+| Saved version | `shawn/my-project/@v1` |
+| Item in a saved version | `shawn/my-project/@v1/docs/design.md` |
+| Full URL | `https://workplane.co/abc12/shawn/my-project/@v1/docs/design.md` |
 
 The MCP tools accept these forms. For your own artifacts, the shorthand (no short_id) works — it fills in yours from the logged-in session.
 
@@ -125,30 +125,31 @@ The frontend resolves these against the item's own location.
 
 ### 5. Snapshot when it's ready
 
-Call the `createTag` tool to freeze the current WIP into a named, immutable snapshot. You can keep editing WIP afterward without affecting the tag. Later, create another tag for the next milestone.
+Call the `saveVersion` tool to freeze the current WIP into a named, immutable snapshot. You can keep editing WIP afterward without affecting the saved version. Later, save another version for the next milestone. Use `listVersions` to enumerate snapshots after the fact.
 
-Tag names are human-readable — `v1`, `beta`, `for-review-2026-04-19` are all fine. Reserved: `latest` (auto-alias for most recent tag).
+Version names are human-readable and optional — `v1`, `beta`, `for-review-2026-04-19` are all fine. Workplane auto-numbers each snapshot regardless, so omitting `name` is reasonable for routine saves.
 
 ### 6. Share
 
-Flip visibility to public so anyone with the link can view, or invite specific people as editors or viewers. Then share the artifact URL.
+Call `setArtifactVisibility` to flip the artifact between public and private. Use `shareArtifact` to invite specific people as editors or viewers (keyed by email — they must already have a Workplane account); `unshareArtifact` removes a member. Then share the artifact URL.
 
 Roles:
 - **owner** (implicit — the creator): everything, including settings and membership
-- **editor**: can upload/rename/delete WIP items, create tags
+- **editor**: can upload/rename/delete WIP items, save versions
 - **viewer**: read-only (viewers of *public* artifacts don't need to be invited)
 
 ### 7. Iterate on reviewer feedback
 
-Reviewers add comments on the website. When you get feedback, use `write` to push updated files and `createTag` to snapshot the new state.
+Reviewers add comments on the website. When you get feedback, use `write` (or the bulk `requestUpload` + `push` flow) to update files, and `saveVersion` to snapshot the new state.
 
 ## Reviewing: reading someone else's work
 
 Given a workplane.co URL or an address:
 
-1. Use `ls` to list the artifact root, a folder, or a tag.
-2. Use `read` to stream one file at a time (markdown, text, code).
-3. Use `getProjectStatus` to see WIP-vs-latest-tag diff.
+1. Use `ls` to list the artifact root, a folder, or a saved version. `tree` gives a recursive view (max depth 4) when you want everything at once.
+2. Use `read` to stream one file at a time (markdown, text, code). `stat` returns metadata (size, content-type, sha256) without the bytes.
+3. Use `status` (with an artifact address) to see WIP-vs-latest-saved-version diff. Without an address, `status` returns the caller's profile + visible artifacts.
+4. Use `pull` to bulk-download an artifact, version, or folder as a zip (returns a 5-minute signed URL).
 
 Comments live on workplane.co (the web UI). Open the artifact, read through, leave comments there.
 
@@ -174,16 +175,18 @@ For non-trivial changes, split items (4) and (5) into their own files (`alternat
 
 | Mistake | Fix |
 |---|---|
-| Tagging before uploading all files | Upload → visually verify in browser → then tag. Tags are immutable. |
-| Artifact description left empty | Always set one — it's the first thing reviewers see. |
+| Saving a version before all files are uploaded | Upload → visually verify in browser → then `saveVersion`. Saved versions are immutable. |
+| Artifact description left empty | Always set one — it's the first thing reviewers see. Use `describeArtifact` to update it later. |
 | Dumping everything into one `SUMMARY.md` | Split by concern. One file per "aspect" (decisions, testing, UI, data-model). |
 | Referencing local paths in content | Readers can't follow them. Paste the relevant lines or move the whole file into the artifact. |
-| Forgetting to make it visible | Flip visibility to public, or add the reviewer as a member — otherwise they get 404. |
+| Forgetting to make it visible | `setArtifactVisibility` to public, or add the reviewer with `shareArtifact` — otherwise they get 404. |
 | No visuals on UI work | Screenshot before + after, upload as images, reference from markdown. |
 | Vague summary ("updated auth") | Be specific — "reordered JWT validation to check expiry before issuer, fixing stale-session bug on custom domains." |
 | Assuming reviewers read everything | Write for glance → scan → dive. Top layer must work on its own. |
+| Inlining a base64 zip in `push` | The flow is two-step: `requestUpload` → PUT zip to the signed URL → `push` with the returned `uploadId`. Bytes never enter the MCP payload. |
 
 ## Tips
 
-- For an agent operating autonomously, the minimum publish loop is: create artifact → write files → set description → tag → make public → return the URL. One artifact, one human ready to review.
-- Use `getProjectStatus` anytime to see what's drifted between WIP and your most recent tag.
+- For an agent operating autonomously, the minimum publish loop is: `createArtifact` → `write` files → `describeArtifact` → `saveVersion` → `setArtifactVisibility` public → return the URL. One artifact, one human ready to review.
+- Use `status` (with the artifact address) anytime to see what's drifted between WIP and your most recent saved version.
+- Use `edit` for surgical text changes (oldString/newString replacements) instead of re-`write`-ing whole files.
