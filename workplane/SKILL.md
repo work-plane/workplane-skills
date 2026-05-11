@@ -38,7 +38,7 @@ Most MCP-aware clients (Claude Desktop, Claude Code, Cursor, Windsurf, Zed, VS C
 
 Authenticate when prompted — the browser opens for sign-in (Google), you approve once, the tools stay available across sessions.
 
-Once connected, list your tools and confirm — you should see `createArtifact`, `write`, `read`, `requestUpload`, `saveVersion`, `listVersions`, `status`, `ls`, `edit`, `downloadZip`, `rm`, `describeArtifact`, `updateArtifactAccess` in the `workplane` namespace.
+Once connected, list your tools and confirm — you should see `createArtifact`, `write`, `read`, `requestUpload`, `saveVersion`, `listVersions`, `ls`, `edit`, `downloadZip`, `rm`, `describeArtifact`, `updateArtifactAccess` in the `workplane` namespace.
 
 ## Data model (what you're working with)
 
@@ -147,10 +147,9 @@ Reviewers add comments on the website. When you get feedback, use `write` (or th
 
 Given a workplane.co URL or an address:
 
-1. Use `ls` to list the artifact root, a folder, or a saved version. Pass `depth` (1–4, default 1) to recurse — folder entries then carry a nested `children` array, so a single `ls` call can return everything at once.
+1. Use `ls` to list the artifact root, a folder, or a saved version. Pass `depth` (1–4, default 1) to recurse — folder entries then carry a nested `children` array, so a single `ls` call can return everything at once. With no address, `ls` returns your profile + visible artifacts.
 2. Use `read` to stream one file at a time (markdown, text, code). Called on a folder, artifact, version, or profile, `read` returns metadata only (size, content-type, sha256 for files; visibility, timestamps, etc. for the rest) — no bytes.
-3. Use `status` (with an artifact address) to see WIP-vs-latest-saved-version diff. Without an address, `status` returns the caller's profile + visible artifacts.
-4. Use `downloadZip` to bulk-download an artifact, version, folder, or single file as a zip (returns a 5-minute signed URL).
+3. Use `downloadZip` to bulk-download an artifact, version, folder, or single file as a zip (returns a 5-minute signed URL).
 
 Comments live on workplane.co (the web UI). Open the artifact, read through, leave comments there.
 
@@ -188,5 +187,4 @@ For non-trivial changes, split items (4) and (5) into their own files (`alternat
 ## Tips
 
 - For an agent operating autonomously, the minimum publish loop is: `createArtifact` → `write` files → `describeArtifact` → `saveVersion` → `updateArtifactAccess({ visibility: "public" })` → return the URL. One artifact, one human ready to review.
-- Use `status` (with the artifact address) anytime to see what's drifted between WIP and your most recent saved version.
 - Use `edit` for surgical text changes (oldString/newString replacements) instead of re-`write`-ing whole files.
