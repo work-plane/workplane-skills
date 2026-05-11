@@ -38,7 +38,7 @@ Most MCP-aware clients (Claude Desktop, Claude Code, Cursor, Windsurf, Zed, VS C
 
 Authenticate when prompted — the browser opens for sign-in (Google), you approve once, the tools stay available across sessions.
 
-Once connected, list your tools and confirm — you should see `createArtifact`, `write`, `read`, `requestUpload`, `push`, `saveVersion`, `listVersions`, `status`, `ls`, `tree`, `stat`, `edit`, `pull`, `rm`, `describeArtifact`, `setArtifactVisibility`, `shareArtifact`, `unshareArtifact` in the `workplane` namespace.
+Once connected, list your tools and confirm — you should see `createArtifact`, `write`, `read`, `requestUpload`, `saveVersion`, `listVersions`, `status`, `ls`, `tree`, `stat`, `edit`, `pull`, `rm`, `describeArtifact`, `setArtifactVisibility`, `shareArtifact`, `unshareArtifact` in the `workplane` namespace.
 
 ## Data model (what you're working with)
 
@@ -88,11 +88,7 @@ write to my-work/docs/design.md
 2. PUT the bytes: `curl -X PUT --data-binary @screenshot.png -H "Content-Type: image/png" "<upload_url>"`.
 3. `write({ address, uploadId })` — turns the upload into the file at `address`.
 
-**Many files at once:** same `requestUpload`, but PUT a zip and call `push` instead of `write`:
-
-1. `requestUpload({ address })` against the artifact or destination folder.
-2. `curl -X PUT --data-binary @bundle.zip -H "Content-Type: application/zip" "<upload_url>"`.
-3. `push({ address, uploadId })` — ingests every file in the zip. Cap: 25 MiB compressed, 200 files.
+For many files, loop `write` (text) or the two-step (binary) per file.
 
 Files of any type work; the web UI renders markdown, HTML, images, and PDFs inline, and offers a download for anything else.
 
@@ -145,7 +141,7 @@ Roles:
 
 ### 7. Iterate on reviewer feedback
 
-Reviewers add comments on the website. When you get feedback, use `write` (or the bulk `requestUpload` + `push` flow) to update files, and `saveVersion` to snapshot the new state.
+Reviewers add comments on the website. When you get feedback, use `write` (or the `requestUpload` + `write` flow for binaries) to update files, and `saveVersion` to snapshot the new state.
 
 ## Reviewing: reading someone else's work
 
@@ -188,7 +184,6 @@ For non-trivial changes, split items (4) and (5) into their own files (`alternat
 | No visuals on UI work | Screenshot before + after, upload as images, reference from markdown. |
 | Vague summary ("updated auth") | Be specific — "reordered JWT validation to check expiry before issuer, fixing stale-session bug on custom domains." |
 | Assuming reviewers read everything | Write for glance → scan → dive. Top layer must work on its own. |
-| Inlining a base64 zip in `push` | The flow is two-step: `requestUpload` → PUT zip to the signed URL → `push` with the returned `uploadId`. Bytes never enter the MCP payload. |
 
 ## Tips
 
