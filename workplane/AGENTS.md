@@ -38,7 +38,7 @@ Most MCP-aware clients (Claude Desktop, Claude Code, Cursor, Windsurf, Zed, VS C
 
 Authenticate when prompted — the browser opens for sign-in (Google), you approve once, the tools stay available across sessions.
 
-Once connected, list your tools and confirm — you should see `createArtifact`, `write`, `read`, `requestUpload`, `saveVersion`, `listVersions`, `status`, `ls`, `edit`, `pull`, `rm`, `describeArtifact`, `setArtifactVisibility`, `shareArtifact`, `unshareArtifact` in the `workplane` namespace.
+Once connected, list your tools and confirm — you should see `createArtifact`, `write`, `read`, `requestUpload`, `saveVersion`, `listVersions`, `status`, `ls`, `edit`, `pull`, `rm`, `describeArtifact`, `updateArtifactAccess` in the `workplane` namespace.
 
 ## Data model (what you're working with)
 
@@ -132,7 +132,7 @@ Version names are human-readable and optional — `v1`, `beta`, `for-review-2026
 
 ### 6. Share
 
-Call `setArtifactVisibility` to flip the artifact between public and private. Use `shareArtifact` to invite specific people as editors or viewers (keyed by email — they must already have a Workplane account); `unshareArtifact` removes a member. Then share the artifact URL.
+Call `updateArtifactAccess` to manage who can see the artifact. Set `visibility: "public" | "private"` to flip the artifact's visibility, `grant: { user, role }` to invite an editor or viewer (`user` is an email or 5-char short_id of an existing Workplane user), or `revoke: { user }` to remove a member. Any combination works in one call. Then share the artifact URL.
 
 Roles:
 - **owner** (implicit — the creator): everything, including settings and membership
@@ -180,13 +180,13 @@ For non-trivial changes, split items (4) and (5) into their own files (`alternat
 | Artifact description left empty | Always set one — it's the first thing reviewers see. Use `describeArtifact` to update it later. |
 | Dumping everything into one `SUMMARY.md` | Split by concern. One file per "aspect" (decisions, testing, UI, data-model). |
 | Referencing local paths in content | Readers can't follow them. Paste the relevant lines or move the whole file into the artifact. |
-| Forgetting to make it visible | `setArtifactVisibility` to public, or add the reviewer with `shareArtifact` — otherwise they get 404. |
+| Forgetting to make it visible | `updateArtifactAccess({ visibility: "public" })`, or add the reviewer with `updateArtifactAccess({ grant: { user, role } })` — otherwise they get 404. |
 | No visuals on UI work | Screenshot before + after, upload as images, reference from markdown. |
 | Vague summary ("updated auth") | Be specific — "reordered JWT validation to check expiry before issuer, fixing stale-session bug on custom domains." |
 | Assuming reviewers read everything | Write for glance → scan → dive. Top layer must work on its own. |
 
 ## Tips
 
-- For an agent operating autonomously, the minimum publish loop is: `createArtifact` → `write` files → `describeArtifact` → `saveVersion` → `setArtifactVisibility` public → return the URL. One artifact, one human ready to review.
+- For an agent operating autonomously, the minimum publish loop is: `createArtifact` → `write` files → `describeArtifact` → `saveVersion` → `updateArtifactAccess({ visibility: "public" })` → return the URL. One artifact, one human ready to review.
 - Use `status` (with the artifact address) anytime to see what's drifted between WIP and your most recent saved version.
 - Use `edit` for surgical text changes (oldString/newString replacements) instead of re-`write`-ing whole files.
