@@ -38,7 +38,7 @@ Most MCP-aware clients (Claude Desktop, Claude Code, Cursor, Windsurf, Zed, VS C
 
 Authenticate when prompted — the browser opens for sign-in (Google), you approve once, the tools stay available across sessions.
 
-Once connected, list your tools and confirm — you should see `createArtifact`, `write`, `read`, `requestUpload`, `saveVersion`, `listVersions`, `status`, `ls`, `tree`, `stat`, `edit`, `pull`, `rm`, `describeArtifact`, `setArtifactVisibility`, `shareArtifact`, `unshareArtifact` in the `workplane` namespace.
+Once connected, list your tools and confirm — you should see `createArtifact`, `write`, `read`, `requestUpload`, `saveVersion`, `listVersions`, `status`, `ls`, `tree`, `edit`, `pull`, `rm`, `describeArtifact`, `setArtifactVisibility`, `shareArtifact`, `unshareArtifact` in the `workplane` namespace.
 
 ## Data model (what you're working with)
 
@@ -148,7 +148,7 @@ Reviewers add comments on the website. When you get feedback, use `write` (or th
 Given a workplane.co URL or an address:
 
 1. Use `ls` to list the artifact root, a folder, or a saved version. `tree` gives a recursive view (max depth 4) when you want everything at once.
-2. Use `read` to stream one file at a time (markdown, text, code). `stat` returns metadata (size, content-type, sha256) without the bytes.
+2. Use `read` to stream one file at a time (markdown, text, code). Called on a folder, artifact, version, or profile, `read` returns metadata only (size, content-type, sha256 for files; visibility, timestamps, etc. for the rest) — no bytes.
 3. Use `status` (with an artifact address) to see WIP-vs-latest-saved-version diff. Without an address, `status` returns the caller's profile + visible artifacts.
 4. Use `pull` to bulk-download an artifact, version, or folder as a zip (returns a 5-minute signed URL).
 
