@@ -21,7 +21,7 @@ Everything is driven by the Workplane MCP server. This skill teaches you how to 
 The skill depends on the Workplane MCP server being connected to your client. If it isn't, add it now:
 
 - **Name:** Workplane
-- **URL:** https://api.workplane.co/mcp
+- **URL:** https://workplane.co/api/mcp
 
 Most MCP-aware clients (Claude Desktop, Claude Code, Cursor, Windsurf, Zed, VS Code Copilot) accept this shape:
 
@@ -30,7 +30,7 @@ Most MCP-aware clients (Claude Desktop, Claude Code, Cursor, Windsurf, Zed, VS C
   "mcpServers": {
     "workplane": {
       "type": "http",
-      "url": "https://api.workplane.co/mcp"
+      "url": "https://workplane.co/api/mcp"
     }
   }
 }
