@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "workplane": {
+      "type": "http",
+      "url": "https://workplane.co/api/mcp"
+    }
+  }
+}

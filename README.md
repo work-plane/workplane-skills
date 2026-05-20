@@ -6,9 +6,7 @@ Agent skill for publishing and reviewing work on [Workplane](https://workplane.c
 
 | Skill | Description |
 |-------|-------------|
-| **workplane** | Publish or review work using the Workplane CLI — create projects, upload items, tag snapshots, manage sharing |
-
-Previously split into `workplane-owner` + `workplane-reviewer`; consolidated into a single `workplane` skill backed by the v2 CLI (projects/items/tags rather than workstreams/workunits).
+| **workplane** | Publish or review work using the Workplane MCP server — create artifacts, upload items, tag snapshots, manage sharing |
 
 ## Installation
 
@@ -18,31 +16,104 @@ Previously split into `workplane-owner` + `workplane-reviewer`; consolidated int
 claude skill install work-plane/workplane-skills
 ```
 
-### Codex / Other Agents
+### Cursor
 
-Copy the skill directory into your project's `.agents/skills/` directory, or reference via your agent platform's skill installation mechanism.
+One-click install via deep link — paste this URL in your browser:
+
+```
+cursor://anysphere.cursor-deeplink/mcp/install?name=workplane&config=eyJ0eXBlIjoiaHR0cCIsInVybCI6Imh0dHBzOi8vd29ya3BsYW5lLmNvL2FwaS9tY3AifQ==
+```
+
+Or install the plugin from the Cursor Marketplace, or add the MCP server manually in `.cursor/mcp.json`:
+
+```json
+{
+  "mcpServers": {
+    "workplane": {
+      "type": "http",
+      "url": "https://workplane.co/api/mcp"
+    }
+  }
+}
+```
+
+### OpenAI Codex
+
+```bash
+codex mcp add workplane --url https://workplane.co/api/mcp
+```
+
+Or add directly to `~/.codex/config.toml`:
+
+```toml
+[mcp_servers.workplane]
+url = "https://workplane.co/api/mcp"
+```
+
+The skill file at `workplane/AGENTS.md` is automatically picked up by Codex when placed in your project root.
+
+### Devin
+
+```bash
+devin mcp add workplane https://workplane.co/api/mcp
+```
+
+Or add to `.devin/config.json` (project-scoped) or `~/.config/devin/config.json` (global):
+
+```json
+{
+  "mcpServers": {
+    "workplane": {
+      "url": "https://workplane.co/api/mcp"
+    }
+  }
+}
+```
+
+The skill file at `workplane/SKILL.md` is automatically picked up when placed in `.devin/skills/workplane/SKILL.md`.
+
+### VS Code (GitHub Copilot)
+
+One-click install via deep link — paste this URL in your browser:
+
+```
+vscode:mcp/install?%7B%22name%22%3A%22workplane%22%2C%22type%22%3A%22http%22%2C%22url%22%3A%22https%3A%2F%2Fworkplane.co%2Fapi%2Fmcp%22%7D
+```
+
+Or add the MCP server in VS Code settings.
+
+### Other MCP-aware clients (Windsurf, Zed, Cline, etc.)
+
+Paste this MCP config into your client's configuration:
+
+```json
+{
+  "mcpServers": {
+    "workplane": {
+      "type": "http",
+      "url": "https://workplane.co/api/mcp"
+    }
+  }
+}
+```
 
 ## Structure
 
 ```
 workplane/
-  SKILL.md           # Generated at CI sync from frontend/content/skill.md
-  scripts/
-    install.sh       # Downloads the workplane CLI from GitHub Releases
+  SKILL.md           # Skill instructions (Claude Code, Devin)
+  AGENTS.md          # Same content as SKILL.md (Codex compatibility)
+.claude-plugin/      # Claude Code marketplace manifest
+.cursor-plugin/      # Cursor marketplace manifest
+mcp.json             # MCP server config (Cursor auto-discovers this)
 README.md            # This file
 ```
 
-The canonical skill markdown lives in `frontend/content/skill.md` at the
-monorepo root, shared with `workplane.co/skill.md`. The `sync-skills` GitHub
-Action materializes `workplane/SKILL.md` from that source before rsyncing the
-skill package into `work-plane/workplane-skills`. `AGENTS.md` (for Codex
-compatibility) is generated from `SKILL.md` during the same CI sync.
-
 ## How It Works
 
-1. **Install the skill** — your agent platform picks it up automatically
-2. **Publish** — when you finish work, tell your agent to publish to Workplane. The skill uses the CLI to create a project, upload files, snapshot with a tag, and share.
-3. **Review** — point your agent at a workplane.co URL or project address. The skill uses the CLI to list, read, and pull the project contents for review.
+1. **Install** — pick your AI tool above, add the MCP server with one command or click
+2. **Publish** — when you finish work, tell your agent to publish to Workplane. The skill uses MCP tools to create an artifact, upload files, snapshot with a tag, and share.
+3. **Review** — point your agent at a workplane.co URL or project address. The skill uses MCP tools to list, read, and pull the project contents for review.
 
 ## License
 
