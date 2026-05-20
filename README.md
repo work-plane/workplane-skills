@@ -103,8 +103,6 @@ Paste this MCP config into your client's configuration:
 workplane/
   SKILL.md           # Skill instructions (Claude Code, Devin)
   AGENTS.md          # Same content as SKILL.md (Codex compatibility)
-  scripts/
-    install.sh       # Downloads the workplane CLI from GitHub Releases
 .claude-plugin/      # Claude Code marketplace manifest
 .cursor-plugin/      # Cursor marketplace manifest
 mcp.json             # MCP server config (Cursor auto-discovers this)
